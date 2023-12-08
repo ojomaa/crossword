@@ -97,9 +97,20 @@ class CrosswordCreator():
         """
         Update `self.domains` such that each variable is node-consistent.
         (Remove any values that are inconsistent with a variable's unary
-         constraints; in this case, the length of the word.)
+        constraints; in this case, the length of the word.)
         """
-        raise NotImplementedError
+        # For loop over the variables
+        for variable in self.domains:
+            values_copy = set(self.domains[variable])
+
+            # Check the values and see if theyre node consistent(length of value = length of variable)
+            for value in values_copy:       
+                if len(value) != variable.length:
+                    
+                    # If a value is not node consistent. remove it
+                    self.domains[variable].remove(value)
+
+            print(self.domains[variable])
 
     def revise(self, x, y):
         """
