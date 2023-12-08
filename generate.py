@@ -106,11 +106,9 @@ class CrosswordCreator():
             # Check the values and see if theyre node consistent(length of value = length of variable)
             for value in values_copy:       
                 if len(value) != variable.length:
-                    
+
                     # If a value is not node consistent. remove it
                     self.domains[variable].remove(value)
-
-            print(self.domains[variable])
 
     def revise(self, x, y):
         """
@@ -121,7 +119,33 @@ class CrosswordCreator():
         Return True if a revision was made to the domain of `x`; return
         False if no revision was made.
         """
-        raise NotImplementedError
+        # Get the overlap position
+        overlap = self.crossword.overlaps[x , y]
+
+        # Create a new copy of X variable
+        X_copy = set(self.domains[x])
+
+        # Inital revised is false
+        revised = False
+
+        # If there is an overlap, compare the characters in X and Y values to see if theres a match
+        if overlap is not None and len(overlap) == 2:
+            overlap_X_value, overlap_Y_value = overlap
+
+            for valueX in X_copy:
+                # Flag indicating if there is a satisfying value in Y's domain
+                has_satisfying_value = any(
+                    valueY[overlap_Y_value] == valueX[overlap_X_value] for valueY in self.domains[y]
+                )
+
+                # If there is no match, remove the X value
+                if not has_satisfying_value:
+                    self.domains[x].remove(valueX)
+                    revised = True
+        
+        # Return True or False
+        return revised
+        
 
     def ac3(self, arcs=None):
         """
@@ -132,7 +156,35 @@ class CrosswordCreator():
         Return True if arc consistency is enforced and no domains are empty;
         return False if one or more domains end up empty.
         """
-        raise NotImplementedError
+
+        # If arcs is none, begin with initial list of all arcs
+        if arcs is None:
+            arcs = []
+
+            # get all the arcs in the crossword (all overlaps)
+            for value in self.crossword.overlaps:
+                if self.crossword.overlaps[value] is not None:
+                    arcs.append(value)
+
+        # While the queue is not None:
+        while arcs:
+
+            # Take a single arc from the queue (2 variables X, Y)
+            x, y = arcs.pop()
+
+            # Call the revise function that makes X, Y arc consistent and return False if there are no values in X
+            if self.revise(x, y):
+                if  len(self.domains[x]) == 0:
+                    return False
+                
+                # If change was made, then gather all other arcs, Z, connected to X (except Y) and enqueue them in the queue
+                for z in self.crossword.neighbors(x):
+                    if z != y:
+                        arcs.append((z, x))
+
+        return True
+
+
 
     def assignment_complete(self, assignment):
         """
