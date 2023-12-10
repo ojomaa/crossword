@@ -134,9 +134,7 @@ class CrosswordCreator():
 
             for valueX in X_copy:
                 # Flag indicating if there is a satisfying value in Y's domain
-                has_satisfying_value = any(
-                    valueY[overlap_Y_value] == valueX[overlap_X_value] for valueY in self.domains[y]
-                )
+                has_satisfying_value = any(valueY[overlap_Y_value] == valueX[overlap_X_value] for valueY in self.domains[y])
 
                 # If there is no match, remove the X value
                 if not has_satisfying_value:
@@ -191,7 +189,8 @@ class CrosswordCreator():
         Return True if `assignment` is complete (i.e., assigns a value to each
         crossword variable); return False otherwise.
         """
-        raise NotImplementedError
+        
+        return all(variable in assignment for variable in self.domains)
 
     def consistent(self, assignment):
         """
@@ -228,7 +227,7 @@ class CrosswordCreator():
 
         If no assignment is possible, return None.
         """
-        raise NotImplementedError
+        print(assignment)
 
 
 def main():
