@@ -1,2 +1,5 @@
+# .gitignore content
+__pycache__/
+*.pyc
+*.pyo
 .DS_Store
-__pycache__
