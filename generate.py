@@ -189,7 +189,7 @@ class CrosswordCreator():
         Return True if `assignment` is complete (i.e., assigns a value to each
         crossword variable); return False otherwise.
         """
-        
+
         return all(variable in assignment for variable in self.domains)
 
     def consistent(self, assignment):
@@ -197,8 +197,36 @@ class CrosswordCreator():
         Return True if `assignment` is consistent (i.e., words fit in crossword
         puzzle without conflicting characters); return False otherwise.
         """
-        raise NotImplementedError
+        # Initialize is_consistent
+        is_consistent = True
 
+        # Check values are distinct
+        for variable1 in assignment:
+            for variable2 in assignment:
+                if variable2 != variable1 and assignment[variable1] == assignment[variable2]:
+                    is_consistent = False
+                    break
+            if not is_consistent:
+                break
+
+        for variable in assignment:
+            
+            # Value is the correct length
+            if variable.length != len(assignment[variable]):
+                is_consistent = False
+                break
+
+            # No conflict with neighbours
+            for neighbor in self.crossword.neighbors(variable):
+                if neighbor in assignment:
+                    overlap = self.crossword.overlaps[variable, neighbor]
+                    if (overlap and assignment[variable][overlap[0]] != assignment[neighbor][overlap[1]]):
+                        is_consistent = False
+                        break
+
+        # Return is_consistent
+        return is_consistent
+    
     def order_domain_values(self, var, assignment):
         """
         Return a list of values in the domain of `var`, in order by
