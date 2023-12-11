@@ -210,7 +210,7 @@ class CrosswordCreator():
                 break
 
         for variable in assignment:
-            
+
             # Value is the correct length
             if variable.length != len(assignment[variable]):
                 is_consistent = False
@@ -234,7 +234,23 @@ class CrosswordCreator():
         The first value in the list, for example, should be the one
         that rules out the fewest values among the neighbors of `var`.
         """
-        raise NotImplementedError
+
+        value_ruleout = {val: 0 for val in self.domains[var]}
+
+        # Iterate over domains and neighbors and increase value_ruleout for every value ruled out by a variable
+        for variable in self.domains[var]:
+            if variable not in assignment:
+                for neighbor in self.crossword.neighbors(var):
+                    if neighbor not in assignment:
+                        overlap = self.crossword.overlaps[var, neighbor]
+                        x, y = overlap
+                        for neighbor_value in self.domains[neighbor]:
+                            if overlap and variable[x] != neighbor_value[y]:
+                                value_ruleout[variable] += 1
+
+        # Return list of vals sorted from fewest to most other_vals ruled out:
+        return sorted(value_ruleout.keys(), key = lambda x: value_ruleout[x])
+
 
     def select_unassigned_variable(self, assignment):
         """
@@ -244,7 +260,19 @@ class CrosswordCreator():
         degree. If there is a tie, any of the tied variables are acceptable
         return values.
         """
-        raise NotImplementedError
+
+        variable_value_length = {}
+
+        # Iterate through the variables not present in assignment
+        for variable in self.domains:
+            if variable not in assignment:
+
+                # Create tuple with domain lengths and degrees. Add to dictionary.
+                variable_value_length[variable] = (len(self.domains[variable]), -len(self.crossword.neighbors(variable)))
+        
+        # Return the minimum value, checking domain lengths first, then degrees second, if necessary.
+        return min(variable_value_length , key= lambda var: variable_value_length[var])
+            
 
     def backtrack(self, assignment):
         """
@@ -255,8 +283,20 @@ class CrosswordCreator():
 
         If no assignment is possible, return None.
         """
-        print(assignment)
+        # If assignment is complete, return assignment
+        if self.assignment_complete(assignment):
+            return assignment
 
+        # Backtrack through each assignment
+        var = self.select_unassigned_variable(assignment)
+        for value in self.order_domain_values(var, assignment):
+            assignment[var] = value
+            if self.consistent(assignment):
+                result = self.backtrack(assignment)
+                if result:
+                    return result
+            del assignment[var]
+        return None
 
 def main():
 
